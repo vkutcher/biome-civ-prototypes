@@ -177,18 +177,30 @@
     const t = tiles[idx];
     const b = biomeByKey(t.biomeKey);
 
-    if(mode === "inspect"){
-      if(t.settlementId === null){
-        log(`Tile: ${b.label}. Disaster chance: ${(b.disasterChance*100).toFixed(0)}%. Rebuild base: ${b.rebuildBase} turns.`);
+   if(mode === "inspect"){
+  if(t.settlementId === null){
+    log(`Tile: ${b.label}. Disaster chance: ${(b.disasterChance*100).toFixed(0)}%. Rebuild base: ${b.rebuildBase} turns.`);
+  } else {
+    const s = settlements.find(ss => ss.id === t.settlementId);
+
+    if(s.damaged){
+      let choice = prompt(
+        `Settlement #${s.id} is damaged.\nNeeds: ${fmtNeeds(s.needs)}\n\nType:\n1 = Send resources\n2 = Delay rebuild`
+      );
+
+      if(choice === "1"){
+        fundRebuildAuto(s);
+        log(`You sent resources to Settlement #${s.id}.`);
       } else {
-        const s = settlements.find(ss => ss.id === t.settlementId);
-        if(s.damaged){
-          log(`Settlement #${s.id} (${b.label}) is DAMAGED. Turns left: ${s.turnsLeft}. Needs: ${fmtNeeds(s.needs)}.`);
-        } else {
-          log(`Settlement #${s.id} (${b.label}) is operational.`);
-        }
+        log(`You delayed rebuilding Settlement #${s.id}.`);
       }
-      return;
+
+    } else {
+      log(`Settlement #${s.id} is operational.`);
+    }
+  }
+  return;
+}
     }
 
     // settle mode
