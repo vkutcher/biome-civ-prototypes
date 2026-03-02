@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Biome Civ</title>
+<style>
+body { font-family: Arial; background:#111; color:white; }
+button { padding:10px; margin:5px; }
+</style>
+</head>
+<body>
+
+<h1>Biome Civilization Prototype</h1>
+<p>Click to found settlements and survive disasters.</p>
+
+<button onclick="foundSettlement()">Found Settlement</button>
+<button onclick="endTurn()">End Turn</button>
+
+<h3 id="resources"></h3>
+<h3 id="log"></h3>
+
+<script>
+let turn = 1;
+
+let resources = {
+food: 20,
+wood: 20,
+stone: 10,
+water: 15
+};
+
+let settlements = [];
+
+function updateUI(){
+document.getElementById("resources").innerHTML =
+"Food:"+resources.food+
+" Wood:"+resources.wood+
+" Stone:"+resources.stone+
+" Water:"+resources.water+
+" | Turn "+turn;
+}
+
+function foundSettlement(){
+if(resources.food < 5 || resources.wood < 5){
+log("Not enough resources.");
+return;
+}
+resources.food -= 5;
+resources.wood -= 5;
+
+let biomes = ["Tropical","Desert","Arctic","Temperate"];
+let biome = biomes[Math.floor(Math.random()*biomes.length)];
+
+settlements.push({
+biome: biome,
+damaged:false
+});
+
+log("New "+biome+" settlement founded.");
+updateUI();
+}
+
+function disaster(){
+settlements.forEach(s=>{
+if(Math.random()<0.3){
+s.damaged = true;
+log("Disaster in "+s.biome+" settlement!");
+}
+});
+}
+
+function rebuild(){
+settlements.forEach(s=>{
+if(s.damaged){
+if(resources.wood>2 && resources.stone>1){
+resources.wood -=2;
+resources.stone -=1;
+s.damaged=false;
+log("Settlement rebuilt.");
+}
+}
+});
+}
+
+function endTurn(){
+turn++;
+disaster();
+rebuild();
+
+resources.food += settlements.length * 2;
+resources.wood += settlements.length;
+
+updateUI();
+}
+
+function log(text){
+document.getElementById("log").innerHTML = text;
+}
+
+updateUI();
+</script>
+
+</body>
+</html>
