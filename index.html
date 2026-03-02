@@ -1,245 +1,307 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Biome Civ</title>
-<style>
-body { font-family: Arial; background:#111; color:white; }
-button { padding:10px; margin:5px; }
-</style>
-</head>
-<body>
+  <meta charset="utf-8" />
+  <title>Biome Civilization</title>
 
-<h1>Biome Civilization Prototype</h1>
-<p>Click to found settlements and survive disasters.</p>
+  <style>
+    body { font-family: Arial; background:#111; color:#fff; margin:0; padding:24px; }
+    h1 { margin:0 0 8px; }
+    .row { display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin:10px 0 14px; }
+    button { padding:10px 12px; cursor:pointer; }
+    #resources { font-weight:700; margin: 6px 0 10px; }
+    #log { margin: 10px 0 14px; color:#ddd; min-height:20px; }
 
-<button onclick="foundSettlement()">Found Settlement</button>
-<button onclick="endTurn()">End Turn</button>
+    .grid { display:grid; grid-template-columns: repeat(12, 44px); gap:6px; margin-top:10px; }
+    .tile { width:44px; height:44px; border-radius:8px; border:1px solid rgba(255,255,255,0.12); cursor:pointer; position:relative; }
+    .tile:hover { outline:2px solid rgba(255,255,255,0.15); }
 
-<h3 id="resources"></h3>
-<h3 id="log"></h3>
+    .temperate { background: #2e7d32; }
+    .desert    { background: #c9a227; }
+    .tropical  { background: #34c759; }
+    .arctic    { background: #5ac8fa; }
+    .mountain  { background: #7f8c8d; }
+    .coastal   { background: #1e88e5; }
 
-<script>
-let turn = 1;
-
-let resources = {
-food: 20,
-wood: 20,
-stone: 10,
-water: 15
-};
-
-let settlements = [];
-
-function updateUI(){
-document.getElementById("resources").innerHTML =
-"Food:"+resources.food+
-" Wood:"+resources.wood+
-" Stone:"+resources.stone+
-" Water:"+resources.water+
-" | Turn "+turn;
-}
-
-function foundSettlement(){
-if(resources.food < 5 || resources.wood < 5){
-log("Not enough resources.");
-return;
-}
-resources.food -= 5;
-resources.wood -= 5;
-
-let biomes = ["Tropical","Desert","Arctic","Temperate"];
-let biome = biomes[Math.floor(Math.random()*biomes.length)];
-
-settlements.push({
-biome: biome,
-damaged:false
-});
-
-log("New "+biome+" settlement founded.");
-updateUI();
-}
-
-function disaster(){
-settlements.forEach(s=>{
-if(Math.random()<0.3){
-s.damaged = true;
-log("Disaster in "+s.biome+" settlement!");
-}
-});
-}
-
-function rebuild(){
-settlements.forEach(s=>{
-if(s.damaged){
-if(resources.wood>2 && resources.stone>1){
-resources.wood -=2;
-resources.stone -=1;
-s.damaged=false;
-log("Settlement rebuilt.");
-}
-}
-});
-}
-
-function endTurn(){
-turn++;
-disaster();
-rebuild();
-
-resources.food += settlements.length * 2;
-resources.wood += settlements.length;
-
-updateUI();
-}
-
-function log(text){
-document.getElementById("log").innerHTML = text;
-}
-
-updateUI();
-</script>
-
-</body>
-</html>
-<!DOCTYPE html>
-<html>
-<head>
-<title>Biome Civ</title>
-
-<style>
-body {
-  font-family: Arial;
-  background: #111;
-  color: white;
-}
-
-.grid {
-  display: grid;
-  grid-template-columns: repeat(10, 50px);
-  gap: 4px;
-  margin-top: 20px;
-}
-
-.tile {
-  width: 50px;
-  height: 50px;
-  cursor: pointer;
-}
-
-.temperate { background: green; }
-.desert { background: goldenrod; }
-.tropical { background: limegreen; }
-.arctic { background: lightblue; }
-
-.settlement {
-  border: 3px solid white;
-}
-</style>
-</head>
-
-<body>
-
-<h1>Biome Civilization</h1>
-<button onclick="endTurn()">End Turn</button>
-
-<h3 id="resources"></h3>
-<h3 id="log"></h3>
-
-<div id="map" class="grid"></div>
-
-<script>
-let turn = 1;
-
-let resources = {
-food: 20,
-wood: 20,
-stone: 10,
-water: 15
-};
-
-let biomes = ["temperate","desert","tropical","arctic"];
-let map = [];
-let settlements = [];
-
-function createMap(){
-  let mapDiv = document.getElementById("map");
-  mapDiv.innerHTML = "";
-
-  for(let i=0;i<100;i++){
-    let biome = biomes[Math.floor(Math.random()*biomes.length)];
-    map.push({biome: biome, settlement:false});
-
-    let tile = document.createElement("div");
-    tile.classList.add("tile", biome);
-    tile.onclick = ()=>foundSettlement(i, tile);
-
-    mapDiv.appendChild(tile);
-  }
-}
-
-function updateUI(){
-  document.getElementById("resources").innerHTML =
-  "Food:"+resources.food+
-  " Wood:"+resources.wood+
-  " Stone:"+resources.stone+
-  " Water:"+resources.water+
-  " | Turn "+turn;
-}
-
-function foundSettlement(index, tile){
-  if(map[index].settlement){
-    log("Already settled.");
-    return;
-  }
-
-  if(resources.food < 5 || resources.wood < 5){
-    log("Not enough resources.");
-    return;
-  }
-
-  resources.food -= 5;
-  resources.wood -= 5;
-
-  map[index].settlement = true;
-  settlements.push(map[index].biome);
-
-  tile.classList.add("settlement");
-
-  log("Settlement founded in "+map[index].biome);
-  updateUI();
-}
-
-function disaster(){
-  settlements.forEach(b=>{
-    let chance = 0.2;
-
-    if(b==="tropical") chance = 0.4;
-    if(b==="desert") chance = 0.3;
-    if(b==="arctic") chance = 0.35;
-
-    if(Math.random() < chance){
-      log("Disaster in "+b+" biome!");
-      resources.food -= 2;
+    .settlement::after{
+      content:"";
+      position:absolute; right:6px; bottom:6px;
+      width:10px; height:10px; border-radius:50%;
+      background:#fff;
+      box-shadow: 0 0 0 3px rgba(255,255,255,0.25);
     }
-  });
-}
+    .damaged::after{ background:#ff6b6b; box-shadow: 0 0 0 3px rgba(255,107,107,0.25); }
+    .badge{
+      position:absolute; left:6px; top:6px;
+      font-size:10px; padding:2px 6px; border-radius:999px;
+      background: rgba(0,0,0,0.25); border:1px solid rgba(255,255,255,0.14);
+    }
 
-function endTurn(){
-  turn++;
-  disaster();
+    .legend { display:flex; gap:10px; flex-wrap:wrap; font-size:12px; color:#bbb; }
+    .swatch { display:inline-block; width:10px; height:10px; border-radius:3px; margin-right:6px; }
+  </style>
+</head>
 
-  resources.food += settlements.length * 2;
-  resources.wood += settlements.length;
+<body>
+  <h1>Biome Civilization</h1>
+  <div style="color:#bbb">Click a tile to found a settlement. Biomes affect disaster chance and rebuild time.</div>
 
-  updateUI();
-}
+  <div class="row">
+    <button onclick="endTurn()">End Turn</button>
+    <button onclick="toggleMode()">Mode: <span id="modeLabel">Settle</span></button>
+    <button onclick="newMap()">New Map</button>
+  </div>
 
-function log(text){
-  document.getElementById("log").innerHTML = text;
-}
+  <div id="resources"></div>
+  <div id="log"></div>
 
-createMap();
-updateUI();
+  <div class="legend">
+    <span><span class="swatch" style="background:#2e7d32"></span>Temperate</span>
+    <span><span class="swatch" style="background:#34c759"></span>Tropical</span>
+    <span><span class="swatch" style="background:#c9a227"></span>Desert</span>
+    <span><span class="swatch" style="background:#5ac8fa"></span>Arctic</span>
+    <span><span class="swatch" style="background:#7f8c8d"></span>Mountain</span>
+    <span><span class="swatch" style="background:#1e88e5"></span>Coastal</span>
+  </div>
+
+  <div id="map" class="grid"></div>
+
+<script>
+  let turn = 1;
+  let mode = "settle"; // settle | inspect
+
+  const resources = { food:20, wood:20, stone:10, water:15 };
+
+  const BIOMES = [
+    { key:"temperate", label:"Temperate", disasterChance:0.12, rebuildBase:2 },
+    { key:"tropical",  label:"Tropical",  disasterChance:0.22, rebuildBase:2 },
+    { key:"desert",    label:"Desert",    disasterChance:0.18, rebuildBase:3 },
+    { key:"arctic",    label:"Arctic",    disasterChance:0.20, rebuildBase:4 },
+    { key:"mountain",  label:"Mountain",  disasterChance:0.16, rebuildBase:3 },
+    { key:"coastal",   label:"Coastal",   disasterChance:0.25, rebuildBase:3 }
+  ];
+
+  const W = 12, H = 8;
+  let tiles = []; // {biomeKey, settlementId|null}
+  let settlements = []; // {id, tileIndex, biomeKey, damaged, turnsLeft, needs}
+
+  function biomeByKey(k){ return BIOMES.find(b=>b.key===k); }
+
+  function updateUI(){
+    document.getElementById("resources").textContent =
+      `Food:${resources.food}  Wood:${resources.wood}  Stone:${resources.stone}  Water:${resources.water}   |   Turn ${turn}`;
+    document.getElementById("modeLabel").textContent = mode === "settle" ? "Settle" : "Inspect";
+  }
+
+  function log(msg){ document.getElementById("log").textContent = msg; }
+
+  function randPick(arr){ return arr[Math.floor(Math.random()*arr.length)]; }
+
+  function generateBiome(i){
+    // mild variety: edges more coastal/arctic/desert
+    const x = i % W;
+    const y = Math.floor(i / W);
+    const edge = (x===0||y===0||x===W-1||y===H-1);
+    const r = Math.random();
+    if(edge && r < 0.25) return "coastal";
+    if(y === 0 && r < 0.45) return "arctic";
+    if(y === H-1 && r < 0.45) return "desert";
+    if(r < 0.15) return "mountain";
+    if(r < 0.40) return "tropical";
+    return "temperate";
+  }
+
+  function renderMap(){
+    const mapEl = document.getElementById("map");
+    mapEl.innerHTML = "";
+    tiles.forEach((t, idx) => {
+      const div = document.createElement("div");
+      div.className = `tile ${t.biomeKey}`;
+
+      const badge = document.createElement("div");
+      badge.className = "badge";
+      badge.textContent = biomeByKey(t.biomeKey).label;
+      div.appendChild(badge);
+
+      if(t.settlementId !== null){
+        div.classList.add("settlement");
+        const s = settlements.find(ss=>ss.id===t.settlementId);
+        if(s?.damaged) div.classList.add("damaged");
+      }
+
+      div.onclick = () => onTileClick(idx);
+      mapEl.appendChild(div);
+    });
+  }
+
+  function onTileClick(idx){
+    const t = tiles[idx];
+    const b = biomeByKey(t.biomeKey);
+
+    if(mode === "inspect"){
+      if(t.settlementId === null){
+        log(`Tile: ${b.label}. Disaster chance: ${(b.disasterChance*100).toFixed(0)}%. Rebuild base: ${b.rebuildBase} turns.`);
+      } else {
+        const s = settlements.find(ss=>ss.id===t.settlementId);
+        if(s.damaged){
+          log(`Settlement #${s.id} (${b.label}) is DAMAGED. Turns left: ${s.turnsLeft}. Needs: ${fmtNeeds(s.needs)}. Click "End Turn" or fund rebuild (auto).`);
+        } else {
+          log(`Settlement #${s.id} (${b.label}) is operational.`);
+        }
+      }
+      return;
+    }
+
+    // settle mode
+    if(t.settlementId !== null){
+      log("Already settled.");
+      return;
+    }
+    const cost = { food:5, wood:5 };
+    if(resources.food < cost.food || resources.wood < cost.wood){
+      log("Not enough resources to found a settlement (need Food 5 + Wood 5).");
+      return;
+    }
+    resources.food -= cost.food;
+    resources.wood -= cost.wood;
+
+    const id = settlements.length + 1;
+    settlements.push({
+      id,
+      tileIndex: idx,
+      biomeKey: t.biomeKey,
+      damaged: false,
+      turnsLeft: 0,
+      needs: {}
+    });
+    t.settlementId = id;
+    log(`Founded Settlement #${id} in ${b.label}.`);
+    updateUI();
+    renderMap();
+  }
+
+  function fmtNeeds(needs){
+    const parts = Object.entries(needs).filter(([,v])=>v>0).map(([k,v])=>`${k}:${v}`);
+    return parts.length ? parts.join(", ") : "none";
+  }
+
+  function computeNeeds(biomeKey, severity){
+    // severity 1..4
+    const needs = { food:0, wood:0, stone:0, water:0 };
+
+    if(biomeKey === "desert"){
+      needs.water += 2 + severity;
+      needs.food  += 1;
+      needs.wood  += 1;
+      needs.stone += 1;
+    } else if(biomeKey === "arctic"){
+      needs.food  += 2;
+      needs.wood  += 2 + severity;
+      needs.stone += 1;
+      needs.water += 1;
+    } else if(biomeKey === "tropical"){
+      needs.wood  += 2 + severity;
+      needs.stone += 1;
+      needs.water += 1;
+    } else if(biomeKey === "coastal"){
+      needs.stone += 2 + severity;
+      needs.wood  += 1;
+      needs.water += 1;
+    } else if(biomeKey === "mountain"){
+      needs.stone += 2 + severity;
+      needs.food  += 1;
+      needs.wood  += 1;
+    } else { // temperate
+      needs.wood  += 1 + severity;
+      needs.stone += 1;
+      needs.water += 1;
+    }
+    return needs;
+  }
+
+  function fundRebuildAuto(s){
+    // auto-spend toward needs each turn (simple)
+    for(const k of Object.keys(s.needs)){
+      if(s.needs[k] <= 0) continue;
+      const can = Math.min(resources[k], s.needs[k]);
+      if(can > 0){
+        resources[k] -= can;
+        s.needs[k] -= can;
+      }
+    }
+  }
+
+  function allNeedsMet(s){
+    return Object.values(s.needs).every(v => v <= 0);
+  }
+
+  function endTurn(){
+    turn++;
+
+    // production: each operational settlement adds resources
+    settlements.forEach(s=>{
+      if(s.damaged) return;
+      // basic yields by biome
+      if(s.biomeKey === "desert"){ resources.stone += 2; resources.food += 1; }
+      else if(s.biomeKey === "arctic"){ resources.water += 1; resources.wood += 1; }
+      else if(s.biomeKey === "tropical"){ resources.food += 2; resources.water += 1; resources.wood += 1; }
+      else if(s.biomeKey === "coastal"){ resources.food += 2; resources.water += 2; resources.stone += 1; }
+      else if(s.biomeKey === "mountain"){ resources.stone += 3; resources.wood += 1; }
+      else { resources.food += 2; resources.wood += 1; resources.stone += 1; resources.water += 1; }
+    });
+
+    // disasters + rebuilding
+    settlements.forEach(s=>{
+      const b = biomeByKey(s.biomeKey);
+
+      if(!s.damaged){
+        if(Math.random() < b.disasterChance){
+          const severity = 1 + Math.floor(Math.random()*4); // 1..4
+          s.damaged = true;
+          s.turnsLeft = b.rebuildBase + severity;
+          s.needs = computeNeeds(s.biomeKey, severity);
+          log(`Disaster! Settlement #${s.id} in ${b.label} damaged. Rebuild: ${s.turnsLeft} turns. Needs: ${fmtNeeds(s.needs)}.`);
+        }
+      } else {
+        // auto fund rebuild (simple)
+        fundRebuildAuto(s);
+
+        // rebuild timer ticks faster if needs met
+        s.turnsLeft -= allNeedsMet(s) ? 2 : 1;
+        if(s.turnsLeft <= 0){
+          s.damaged = false;
+          s.turnsLeft = 0;
+          s.needs = {};
+          log(`Settlement #${s.id} rebuilt and operational again.`);
+        }
+      }
+    });
+
+    updateUI();
+    renderMap();
+  }
+
+  function toggleMode(){
+    mode = (mode === "settle") ? "inspect" : "settle";
+    updateUI();
+    log(mode === "inspect" ? "Inspect mode: click tiles to view biome + settlement status." : "Settle mode: click tiles to found settlements.");
+  }
+
+  function newMap(){
+    turn = 1;
+    resources.food = 20; resources.wood = 20; resources.stone = 10; resources.water = 15;
+    settlements = [];
+    tiles = [];
+    for(let i=0;i<W*H;i++){
+      tiles.push({ biomeKey: generateBiome(i), settlementId: null });
+    }
+    updateUI();
+    renderMap();
+    log("New map generated.");
+  }
+
+  // init
+  newMap();
 </script>
 
 </body>
