@@ -119,23 +119,36 @@
     return parts.length ? parts.join(", ") : "none";
   }
 
-  function computeNeeds(biomeKey, severity){
-    const needs = { food:0, wood:0, stone:0, water:0 };
-    if (biomeKey === "desert"){
-      needs.water += 2 + severity; needs.food += 1; needs.wood += 1; needs.stone += 1;
-    } else if (biomeKey === "arctic"){
-      needs.food += 2; needs.wood += 2 + severity; needs.stone += 1; needs.water += 1;
-    } else if (biomeKey === "tropical"){
-      needs.wood += 2 + severity; needs.stone += 1; needs.water += 1;
-    } else if (biomeKey === "coastal"){
-      needs.stone += 2 + severity; needs.wood += 1; needs.water += 1;
-    } else if (biomeKey === "mountain"){
-      needs.stone += 2 + severity; needs.food += 1; needs.wood += 1;
-    } else {
-      needs.wood += 1 + severity; needs.stone += 1; needs.water += 1;
-    }
-    return needs;
+ function computeNeeds(biomeKey, severity){
+  const needs = { food:0, wood:0, stone:0, water:0 };
+
+  if(biomeKey === "desert"){
+    needs.water += 3 + severity;
+    needs.food  += 2;
   }
+  else if(biomeKey === "arctic"){
+    needs.food  += 2 + severity;
+    needs.wood  += 2;
+  }
+  else if(biomeKey === "tropical"){
+    needs.wood  += 2 + severity;
+    needs.water += 2;
+  }
+  else if(biomeKey === "coastal"){
+    needs.stone += 2 + severity;
+    needs.water += 1;
+  }
+  else if(biomeKey === "mountain"){
+    needs.stone += 3 + severity;
+    needs.food  += 1;
+  }
+  else { // temperate
+    needs.wood  += 2;
+    needs.stone += 1;
+  }
+
+  return needs;
+}
 
   function fundRebuildAuto(s){
     for(const k of Object.keys(s.needs)){
