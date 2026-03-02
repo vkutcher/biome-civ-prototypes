@@ -101,3 +101,146 @@ updateUI();
 
 </body>
 </html>
+<!DOCTYPE html>
+<html>
+<head>
+<title>Biome Civ</title>
+
+<style>
+body {
+  font-family: Arial;
+  background: #111;
+  color: white;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(10, 50px);
+  gap: 4px;
+  margin-top: 20px;
+}
+
+.tile {
+  width: 50px;
+  height: 50px;
+  cursor: pointer;
+}
+
+.temperate { background: green; }
+.desert { background: goldenrod; }
+.tropical { background: limegreen; }
+.arctic { background: lightblue; }
+
+.settlement {
+  border: 3px solid white;
+}
+</style>
+</head>
+
+<body>
+
+<h1>Biome Civilization</h1>
+<button onclick="endTurn()">End Turn</button>
+
+<h3 id="resources"></h3>
+<h3 id="log"></h3>
+
+<div id="map" class="grid"></div>
+
+<script>
+let turn = 1;
+
+let resources = {
+food: 20,
+wood: 20,
+stone: 10,
+water: 15
+};
+
+let biomes = ["temperate","desert","tropical","arctic"];
+let map = [];
+let settlements = [];
+
+function createMap(){
+  let mapDiv = document.getElementById("map");
+  mapDiv.innerHTML = "";
+
+  for(let i=0;i<100;i++){
+    let biome = biomes[Math.floor(Math.random()*biomes.length)];
+    map.push({biome: biome, settlement:false});
+
+    let tile = document.createElement("div");
+    tile.classList.add("tile", biome);
+    tile.onclick = ()=>foundSettlement(i, tile);
+
+    mapDiv.appendChild(tile);
+  }
+}
+
+function updateUI(){
+  document.getElementById("resources").innerHTML =
+  "Food:"+resources.food+
+  " Wood:"+resources.wood+
+  " Stone:"+resources.stone+
+  " Water:"+resources.water+
+  " | Turn "+turn;
+}
+
+function foundSettlement(index, tile){
+  if(map[index].settlement){
+    log("Already settled.");
+    return;
+  }
+
+  if(resources.food < 5 || resources.wood < 5){
+    log("Not enough resources.");
+    return;
+  }
+
+  resources.food -= 5;
+  resources.wood -= 5;
+
+  map[index].settlement = true;
+  settlements.push(map[index].biome);
+
+  tile.classList.add("settlement");
+
+  log("Settlement founded in "+map[index].biome);
+  updateUI();
+}
+
+function disaster(){
+  settlements.forEach(b=>{
+    let chance = 0.2;
+
+    if(b==="tropical") chance = 0.4;
+    if(b==="desert") chance = 0.3;
+    if(b==="arctic") chance = 0.35;
+
+    if(Math.random() < chance){
+      log("Disaster in "+b+" biome!");
+      resources.food -= 2;
+    }
+  });
+}
+
+function endTurn(){
+  turn++;
+  disaster();
+
+  resources.food += settlements.length * 2;
+  resources.wood += settlements.length;
+
+  updateUI();
+}
+
+function log(text){
+  document.getElementById("log").innerHTML = text;
+}
+
+createMap();
+updateUI();
+</script>
+
+</body>
+</html>
